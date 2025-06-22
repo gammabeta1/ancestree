@@ -2649,53 +2649,51 @@ loadUserProfile();
     loadGrowthChart();
 
     document.addEventListener('DOMContentLoaded', () => {
-        fetch('https://ancetree.onrender.com/api/user/me')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch user data');
-                }
-                return response.json();
-            })
-            .then(user => {
-                // Update navbar username
-                const usernameSpan = document.querySelector('#navbarUsername');
-                if (usernameSpan) {
-                    usernameSpan.textContent = user.username || 'User';
-                }
+    fetch('https://ancetree.onrender.com/api/user/me', {
+        credentials: 'include'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to fetch user data');
+        }
+        return response.json();
+    })
+    .then(user => {
+        const usernameSpan = document.querySelector('#navbarUsername');
+        if (usernameSpan) {
+            usernameSpan.textContent = user.username || 'User';
+        }
 
-                // Update profile image
-                const navbarAvatar = document.querySelector('#navbarAvatar');
-                if (navbarAvatar && user.profileImage) {
-                    navbarAvatar.src = user.profileImage;
-                }
+        const navbarAvatar = document.querySelector('#navbarAvatar');
+        if (navbarAvatar && user.profileImage) {
+            navbarAvatar.src = user.profileImage;
+        }
 
-                // Update dashboard name
-                const dashboardName = document.querySelector('#dashboardUsername');
-                if (dashboardName) {
-                    dashboardName.textContent = user.username || 'User';
-                }
+        const dashboardName = document.querySelector('#dashboardUsername');
+        if (dashboardName) {
+            dashboardName.textContent = user.username || 'User';
+        }
 
-                // Update email, phone, etc. on profile page if needed
-                const profileEmail = document.querySelector('#profileEmail');
-                const profilePhone = document.querySelector('#profilePhone');
-                const profileFullName = document.querySelector('#profileFullName');
-                const profileImage = document.querySelector('#profileImage');
+        const profileEmail = document.querySelector('#profileEmail');
+        const profilePhone = document.querySelector('#profilePhone');
+        const profileFullName = document.querySelector('#profileFullName');
+        const profileImage = document.querySelector('#profileImage');
 
-                if (profileEmail) profileEmail.textContent = user.email || '';
-                if (profilePhone) profilePhone.textContent = user.phone || '';
-                if (profileFullName) profileFullName.textContent = user.fullName || '';
-                if (profileImage && user.profileImage) profileImage.src = user.profileImage;
+        if (profileEmail) profileEmail.textContent = user.email || '';
+        if (profilePhone) profilePhone.textContent = user.phone || '';
+        if (profileFullName) profileFullName.textContent = user.fullName || '';
+        if (profileImage && user.profileImage) profileImage.src = user.profileImage;
 
-                // Set all cash balances to 0.00 if no balance is returned
-                const balanceElements = document.querySelectorAll('.user-balance');
-                balanceElements.forEach(el => {
-                    el.textContent = user.balance ? user.balance.toFixed(2) : '0.00';
-                });
-            })
-            .catch(error => {
-                console.error('Error loading user data:', error);
-            });
+        const balanceElements = document.querySelectorAll('.user-balance');
+        balanceElements.forEach(el => {
+            el.textContent = user.balance ? user.balance.toFixed(2) : '0.00';
+        });
+    })
+    .catch(error => {
+        console.error('Error loading user data:', error);
     });
+});
+
 
     // Toggle Mobile Dropdown
     mobileMenuButton.addEventListener("click", function (e) {
