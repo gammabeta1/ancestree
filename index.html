@@ -2610,7 +2610,8 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const res = await fetch('https://ancetree.onrender.com/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+  credentials: 'include'
     });
 
     const result = await res.json();
@@ -2718,7 +2719,8 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     const res = await fetch('https://ancetree.onrender.com/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+  credentials: 'include'
     });
 
     const result = await res.json();
