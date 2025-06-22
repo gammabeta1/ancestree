@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | AncesTree AgrInvest</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="img/logo.PNG" type="image/x-icon" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+
+            const [userRes, investRes] = await Promise.all([
+                fetch('https://ancetree.onrender.com/api/admin/chart/user-growth', {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                fetch('https://ancetree.onrender.com/api/admin/chart/investment-distribution', {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+            ]);
+
+            const userData = await userRes.json();
+            const investData = await investRes.json();
+
+            // User Growth Chart
+            const months = [
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            ];
+            const userGrowthChart = new Chart(document.getElementById("userGrowthChart"), {
+                type: "line",
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: "New Users",
+                        data: Array(12).fill(0).map((_, i) =>
+                            userData.find(u => u._id === i + 1)?.total || 0
+                        ),
+                        borderColor: "#059669",
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Investment Distribution Chart
+            const investLabels = Object.keys(investData);
+            const investAmounts = Object.values(investData);
+
+            const investmentDistributionChart = new Chart(document.getElementById("investmentDistributionChart"), {
+                type: "doughnut",
+                data: {
+                    labels: investLabels,
+                    datasets: [{
+                        label: "Investments",
+                        data: investAmounts,
+                        backgroundColor: [
+                            "#10B981", "#6EE7B7", "#D1FAE5", "#34D399", "#047857",
+                            "#A7F3D0", "#064E3B", "#BBF7D0", "#059669", "#F0FDFA"
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        });
+    </script>
+    <style>
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-button.active {
+            border-bottom: 3px solid #10b981;
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .transaction-status-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .transaction-status-completed {
+            background-color: #d1fae5;
+            color: #059669;
+        }
+
+        .transaction-status-rejected {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-active {
+            background-color: #d1fae5;
+            color: #059669;
+        }
+
+        .status-suspended {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .theme-dark {
+            --tw-bg-opacity: 1;
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+
+        .theme-dark .bg-white {
+            background-color: #374151;
+        }
+
+        .theme-dark .text-gray-800 {
+            color: #e5e7eb;
+        }
+
+        .theme-dark .text-gray-500 {
+            color: #9ca3af;
+        }
+
+        .theme-dark .bg-gray-100 {
+            background-color: #1f2937;
+        }
+
+        .theme-dark .bg-gray-50 {
+            background-color: #374151;
+        }
+
+        .theme-dark .hover\:bg-green-700:hover {
+            background-color: #047857;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <!-- Top Navigation -->
+
+    <div id="adminLoginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm text-gray-800 relative">
+            <h2 class="text-xl font-bold mb-4 text-green-700">Admin Login</h2>
+
+            <label class="block text-sm mb-1">Admin Name</label>
+            <input id="adminNameInput" type="text" class="w-full mb-4 p-2 border rounded" placeholder="Enter full name">
+
+            <label class="block text-sm mb-1">Admin Password</label>
+            <input id="adminPasswordInput" type="password" class="w-full mb-4 p-2 border rounded"
+                placeholder="Enter password">
+
+            <label class="block text-sm mb-1">Admin Phone</label>
+            <input id="adminPhoneInput" type="tel" class="w-full mb-4 p-2 border rounded"
+                placeholder="Enter phone number">
+
+            <button onclick="validateAdminLogin()"
+                class="w-full bg-green-700 hover:bg-green-800 text-white py-2 rounded">
+                Login as Admin
+            </button>
+
+            <div id="adminLoginError" class="text-red-600 mt-2 hidden">Invalid admin credentials</div>
+        </div>
+    </div>
+
+    <div id="adminContent" class="hidden">
+        <nav class="bg-green-800 text-white shadow-lg fixed top-0 left-0 right-0 z-50">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between items-center h-16">
+                    <!-- Logo -->
+                    <div class="flex items-center space-x-2">
+                        <div class="bg-white p-0.5 rounded-full h-12 w-12 flex items-center justify-center">
+                            <img src="img/logo.PNG" alt="Logo"
+                                class="h-10 w-10 object-contain rounded-full">
+                        </div>
+                        <span class="text-white text-xl font-bold">AncesTree AgrInvest</span>
+                    </div>
+
+                    <!-- Desktop Navigation Links -->
+                    <div class="hidden md:flex items-center space-x-4">
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition"
+                            onclick="showTab('admin-dashboard')">
+                            <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
+                        </a>
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition"
+                            onclick="showTab('withdrawals')">
+                            <i class="fas fa-money-bill-wave mr-1"></i> Withdrawals
+                        </a>
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition"
+                            onclick="showTab('users')">
+                            <i class="fas fa-users mr-1"></i> Users
+                        </a>
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition"
+                            onclick="showTab('notifications')">
+                            <i class="fas fa-bell mr-1"></i> Notifications
+                        </a>
+                    </div>
+
+                    <!-- Right Section: Notification + Profile + Hamburger -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Theme Toggle -->
+                        <button id="themeToggle" class="text-white focus:outline-none" onclick="toggleTheme()">
+                            <i class="fas fa-moon"></i>
+                        </button>
+
+                        <!-- Profile -->
+                        <div class="relative">
+                            <button id="profileButton"
+                                class="flex items-center space-x-2 focus:outline-none hover:text-green-200">
+                                <img src="https://via.placeholder.com/32" alt="User Avatar"
+                                    class="w-8 h-8 rounded-full">
+                                <span class="text-sm font-medium hidden sm:inline">Admin Panel</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div id="profileDropdown"
+                                class="hidden absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl py-2 z-50 text-gray-800">
+                                <a href="#" class="block px-4 py-3 text-sm font-medium hover:bg-green-50 transition"
+                                    onclick="showTab('admin-settings')">
+                                    <i class="fas fa-cog mr-2 text-green-600"></i> Settings
+                                </a>
+                                <a href="#" class="block px-4 py-3 text-sm font-medium hover:bg-green-50 transition"
+                                    onclick="logout(event)">
+                                    <i class="fas fa-sign-out-alt mr-2 text-green-600"></i> Logout
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Hamburger and Profile (side by side on mobile) -->
+                        <div class="flex items-center">
+                            <!-- Hamburger -->
+                            <div class="md:hidden">
+                                <button id="mobileMenuButton" class="text-white focus:outline-none">
+                                    <i class="fas fa-bars text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Dropdown Navigation -->
+                <div id="mobileDropdown" class="hidden md:hidden bg-white rounded-b-lg shadow-md pb-4 text-gray-800">
+                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium hover:bg-green-50 transition"
+                        onclick="showTab('admin-dashboard')">
+                        <i class="fas fa-tachometer-alt mr-3 text-green-600"></i> Dashboard
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium hover:bg-green-50 transition"
+                        onclick="showTab('withdrawals')">
+                        <i class="fas fa-money-bill-wave mr-3 text-green-600"></i> Withdrawals
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium hover:bg-green-50 transition"
+                        onclick="showTab('users')">
+                        <i class="fas fa-users mr-3 text-green-600"></i> Users
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium hover:bg-green-50 transition"
+                        onclick="showTab('notifications')">
+                        <i class="fas fa-bell mr-3 text-green-600"></i> Notifications
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+
+        <!-- Main Content -->
+        <div class="pt-16 min-h-screen">
+            <!-- Enhanced Admin Dashboard Content -->
+            <div id="admin-dashboard" class="tab-content active p-6">
+                <!-- Welcome Banner -->
+                <div class="bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg shadow-lg p-6 mb-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                        <div>
+                            <h1 class="text-2xl font-bold mb-2">Welcome to Admin Dashboard</h1>
+                            <p class="opacity-90">Manage your platform and user activities</p>
+                        </div>
+                        <div class="flex space-x-2 mt-4 md:mt-0">
+                            <button onclick="showTab('notifications')"
+                                class="bg-white text-green-800 hover:bg-gray-100 px-4 py-2 rounded-md text-sm font-medium transition">
+                                <i class="fas fa-bell mr-1"></i> Send Notification
+                            </button>
+                            <button onclick="showTab('users')"
+                                class="bg-white text-green-800 hover:bg-gray-100 px-4 py-2 rounded-md text-sm font-medium transition">
+                                <i class="fas fa-user-plus mr-1"></i> Add User
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="notifications" class="tab-content p-6">
+  <h2 class="text-2xl font-semibold mb-4">All Notifications</h2>
+  <div id="notificationList" class="space-y-4">
+    <!-- Populated by the same recentActivity logic -->
+    <p class="text-gray-500">Loading notifications...</p>
+  </div>
+</div>
+
+
+
+                <!-- Enhanced Admin Summary Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 dashboard-stats">
+                    <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-green-100 text-green-700 mr-4">
+                                <i class="fas fa-users text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Total Users</p>
+                                <h3 id="totalUsers" class="text-2xl font-bold">Loading...</h3>
+                                <p class="text-sm text-green-600 mt-1"><i class="fas fa-arrow-up mr-1"></i> 0.0% from
+                                    last
+                                    month</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-blue-100 text-blue-700 mr-4">
+                                <i class="fas fa-money-bill-wave text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Total Investments</p>
+                                <h3 id="totalInvestments" class="text-2xl font-bold">Loading...</h3>
+                                <p class="text-sm text-green-600 mt-1"><i class="fas fa-arrow-up mr-1"></i> 0.0% from
+                                    last
+                                    month</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-purple-100 text-purple-700 mr-4">
+                                <i class="fas fa-hand-holding-usd text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Pending Withdrawals</p>
+                                <h3 id="pendingWithdrawals" class="text-2xl font-bold">Loading...</h3>
+                                <p class="text-sm text-green-600 mt-1"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-yellow-100 text-yellow-700 mr-4">
+                                <i class="fas fa-chart-pie text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Platform Earnings</p>
+                                <h3 id="platformEarnings" class="text-2xl font-bold">Loading...</h3>
+                                <p class="text-sm text-green-600 mt-1"><i class="fas fa-arrow-up mr-1"></i> 0.0% from
+                                    last
+                                    month</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-semibold">User Growth</h2>
+                            <div class="flex space-x-2">
+                                <button class="text-xs bg-gray-100 px-2 py-1 rounded">Weekly</button>
+                                <button class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Monthly</button>
+                                <button class="text-xs bg-gray-100 px-2 py-1 rounded">Yearly</button>
+                            </div>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="userGrowthChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-semibold">Investment Distribution</h2>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="investmentDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Recent Activity -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h2 class="text-lg font-semibold mb-4">Recent Activity</h2>
+                    <div class="space-y-4" id="recentActivityList">
+                        <div class="flex items-start border-b pb-4">
+                            <div class="shrink-0 p-2 bg-green-100 text-green-700 rounded-full mr-4">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">New user registered</p>
+                                <p class="text-sm text-gray-500">Samuel K. (samuel@example.com) just registered on the
+                                    platform</p>
+                                <p class="text-xs text-gray-400 mt-1">10 minutes ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start border-b pb-4">
+                            <div class="shrink-0 p-2 bg-blue-100 text-blue-700 rounded-full mr-4">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">New investment</p>
+                                <p class="text-sm text-gray-500">Jane D. invested ₵3,500 in Cassava Farming package</p>
+                                <p class="text-xs text-gray-400 mt-1">25 minutes ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start border-b pb-4">
+                            <div class="shrink-0 p-2 bg-purple-100 text-purple-700 rounded-full mr-4">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Withdrawal request</p>
+                                <p class="text-sm text-gray-500">Michael A. requested to withdraw ₵1,200</p>
+                                <p class="text-xs text-gray-400 mt-1">1 hour ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="shrink-0 p-2 bg-red-100 text-red-700 rounded-full mr-4">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Login attempt failed</p>
+                                <p class="text-sm text-gray-500">Multiple failed login attempts detected for admin
+                                    account
+                                </p>
+                                <p class="text-xs text-gray-400 mt-1">2 hours ago</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <button onclick="showTab('activity-log')"
+                            class="text-green-600 hover:text-green-800 font-medium">
+                            View All Activities
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Enhanced Withdrawals Tab with Bulk Processing -->
+            <div id="withdrawals" class="tab-content p-6">
+                <!-- Bulk Action Panel -->
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 flex flex-wrap items-center justify-between">
+                    <div class="flex items-center space-x-2 mb-2 sm:mb-0">
+                        <input type="checkbox" id="select-all" class="h-4 w-4 rounded border-gray-300 text-green-600">
+                        <label for="select-all" class="text-sm font-medium">Select all</label>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button
+                            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center disabled:opacity-50"
+                            disabled>
+                            <i class="fas fa-check-circle mr-1"></i> Approve Selected (0)
+                        </button>
+                        <button
+                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition flex items-center disabled:opacity-50"
+                            disabled>
+                            <i class="fas fa-times-circle mr-1"></i> Reject Selected (0)
+                        </button>
+                        <button
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center">
+                            <i class="fas fa-file-export mr-1"></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2 class="text-2xl font-semibold">Withdrawal Management</h2>
+                    <div class="flex space-x-2 mt-4 md:mt-0">
+                        <button class="tab-button px-4 py-2" onclick="filterWithdrawals('all')">
+                            All Withdrawals
+                        </button>
+                        <button class="tab-button active px-4 py-2" onclick="filterWithdrawals('pending')">
+                            Pending
+                        </button>
+                        <button class="tab-button px-4 py-2" onclick="filterWithdrawals('completed')">
+                            Completed
+                        </button>
+                    </div>
+                </div>
+
+
+
+                <!-- Pending Withdrawals -->
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6" id="pending-withdrawals">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">Pending Withdrawal Requests</h3>
+                        <span id="withdrawal-count" class="text-sm text-gray-500">Loading...</span>
+                    </div>
+                    <div id="withdrawalList" class="divide-y divide-gray-200">
+                        <div class="p-4 hover:bg-gray-50 transition">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                                <div class="mb-2 md:mb-0">
+                                    <div class="flex items-center space-x-3">
+                                        <img src="https://via.placeholder.com/40" alt="User"
+                                            class="w-8 h-8 rounded-full">
+                                        <div>
+                                            <p class="font-medium">John Smith</p>
+                                            <p class="text-xs text-gray-500">john.smith@example.com</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="md:text-right">
+                                    <p class="font-bold text-lg">₵850.00</p>
+                                    <p class="text-xs text-gray-500">Requested: 10 minutes ago</p>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        <span class="font-medium">Payment Method:</span> MTN Mobile Money
+                                    </p>
+                                    <p class="text-sm text-gray-700">
+                                        <span class="font-medium">Number:</span> 0244123456
+                                    </p>
+                                </div>
+                                <div class="mt-2 sm:mt-0 flex space-x-2">
+                                    <button
+                                        class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
+                                        Approve
+                                    </button>
+                                    <button
+                                        class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
+                                        Reject
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Users Management Section -->
+<div id="users" class="tab-content p-6">
+  <h2 class="text-2xl font-semibold mb-4">User Management</h2>
+  <div class="overflow-x-auto rounded-lg shadow bg-white">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Full Name</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Username</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+        </tr>
+      </thead>
+      <tbody id="userTableBody" class="bg-white divide-y divide-gray-200">
+        <!-- Filled dynamically by JS -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+
+
+                        <script>
+                            // Tab Management
+                            function showTab(tabId) {
+                                // Hide all tab contents
+                                document.querySelectorAll('.tab-content').forEach(tab => {
+                                    tab.classList.remove('active');
+                                });
+
+                                // Show selected tab
+                                document.getElementById(tabId).classList.add('active');
+
+                                // If showing charts tab, render the charts
+                                if (tabId === 'admin-dashboard') {
+                                    initCharts();
+                                }
+
+                                // Close mobile menu if open
+                                document.getElementById('mobileDropdown').classList.add('hidden');
+
+                                // Close any open dropdowns
+                                closeAllDropdowns();
+                            }
+
+                            // Close all dropdowns
+                            function closeAllDropdowns() {
+                                document.getElementById('notificationDropdown').classList.add('hidden');
+                                document.getElementById('profileDropdown').classList.add('hidden');
+                            }
+
+                            // Initialize charts
+                            function initCharts() {
+                                // User Growth Chart (Line)
+                                const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+                                new Chart(userGrowthCtx, {
+                                    type: 'line',
+                                    data: {
+                                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                                        datasets: [{
+                                            label: 'New Users',
+                                            data: [85, 95, 112, 98, 105, 125, 132, 143, 150, 168, 185, 210],
+                                            borderColor: '#10B981',
+                                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                            fill: true,
+                                            tension: 0.4
+                                        }]
+                                    },
+                                    options: {
+                                        maintainAspectRatio: false,
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true
+                                            }
+                                        },
+                                        plugins: {
+                                            legend: {
+                                                display: false
+                                            }
+                                        }
+                                    }
+                                });
+
+                                // Investment Distribution (Pie/Doughnut)
+                                const investmentCtx = document.getElementById('investmentDistributionChart').getContext('2d');
+                                new Chart(investmentCtx, {
+                                    type: 'doughnut',
+                                    data: {
+                                        labels: ['Cassava', 'Maize', 'Palm Oil', 'Poultry', 'Cocoa'],
+                                        datasets: [{
+                                            data: [25, 20, 30, 15, 10],
+                                            backgroundColor: [
+                                                '#10B981',
+                                                '#3B82F6',
+                                                '#8B5CF6',
+                                                '#F59E0B',
+                                                '#EF4444'
+                                            ],
+                                            borderWidth: 0
+                                        }]
+                                    },
+                                    options: {
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                position: 'right'
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+
+                            // Toggle theme between light/dark
+                            function toggleTheme() {
+                                const body = document.body;
+                                const themeToggle = document.getElementById('themeToggle');
+
+                                if (body.classList.contains('theme-dark')) {
+                                    body.classList.remove('theme-dark');
+                                    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                                } else {
+                                    body.classList.add('theme-dark');
+                                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                                }
+                            }
+
+                            // Filter withdrawals by status
+                            function filterWithdrawals(status) {
+                                const buttons = document.querySelectorAll('.tab-button');
+                                buttons.forEach(btn => {
+                                    btn.classList.remove('active');
+                                    if (btn.textContent.trim().toLowerCase() === status) {
+                                        btn.classList.add('active');
+                                    }
+                                });
+                                // In a real app, this would filter the withdrawal list
+                                alert(`Showing ${status} withdrawals`);
+                            }
+
+                            // Initialize when page loads
+                            document.addEventListener('DOMContentLoaded', function () {
+                                // Initialize charts for dashboard
+                                initCharts();
+
+                                // Show dashboard tab by default
+                                showTab('admin-dashboard');
+
+                                // Mobile menu toggle
+                                document.getElementById('mobileMenuButton').addEventListener('click', function () {
+                                    document.getElementById('mobileDropdown').classList.toggle('hidden');
+                                });
+
+
+                                // Profile dropdown
+                                document.getElementById('profileButton').addEventListener('click', function (e) {
+                                    e.stopPropagation();
+                                    document.getElementById('profileDropdown').classList.toggle('hidden');
+                                    document.getElementById('notificationDropdown').classList.add('hidden');
+                                });
+
+                                // Click anywhere else to close dropdowns
+                                document.addEventListener('click', function (e) {
+                                    if (!e.target.closest('.relative')) {
+                                        closeAllDropdowns();
+                                    }
+                                });
+
+                                // Default settings tab
+                                showSetting('account');
+                            });
+
+                            document.addEventListener('DOMContentLoaded', async () => {
+                                try {
+                                    const res = await fetch('https://ancetree.onrender.com/api/admin/stats', {
+                                        credentials: 'include'
+                                    });
+
+                                    const data = await res.json();
+
+                                    document.getElementById('totalUsers').textContent = data.totalUsers;
+                                    document.getElementById('totalInvestments').textContent = `₵${data.totalInvested.toFixed(2)}`;
+                                    document.getElementById('pendingWithdrawals').textContent = `₵${data.pendingWithdrawals.toFixed(2)}`;
+                                    document.getElementById('platformEarnings').textContent = `₵${data.platformEarnings.toFixed(2)}`;
+                                } catch (err) {
+                                    console.error('Error fetching admin stats:', err);
+                                }
+                            });
+
+                            document.addEventListener('DOMContentLoaded', async () => {
+                                try {
+                                    const res = await fetch('https://ancetree.onrender.com/api/user/me', {
+                                        method: 'GET',
+                                        credentials: 'include',
+                                    });
+
+                                    const user = await res.json();
+
+                                    if (!res.ok || !user || !user.isAdmin) {
+                                        // Not admin – require manual validation
+                                        document.getElementById('adminLoginModal').classList.remove('hidden');
+                                    }
+                                } catch (err) {
+                                    // Session or fetch error – require manual validation
+                                    document.getElementById('adminLoginModal').classList.remove('hidden');
+                                }
+                            });
+
+                            function validateAdminLogin() {
+                                const name = document.getElementById('adminNameInput').value.trim();
+                                const pass = document.getElementById('adminPasswordInput').value;
+                                const phone = document.getElementById('adminPhoneInput').value.trim();
+
+                                const isValid = name === 'Prince Kwarteng' &&
+                                    pass === 'Kenzera0551231300#' &&
+                                    phone === '0551231300';
+
+                                if (isValid) {
+                                    document.getElementById('adminLoginModal').classList.add('hidden');
+                                } else {
+                                    document.getElementById('adminLoginError').classList.remove('hidden');
+                                }
+                            }
+
+                            document.addEventListener('DOMContentLoaded', async () => {
+                                try {
+                                    const res = await fetch('https://ancetree.onrender.com/api/user/me', {
+                                        method: 'GET',
+                                        credentials: 'include',
+                                    });
+
+                                    const user = await res.json();
+                                    if (res.ok && user && user.isAdmin) {
+                                        // Allow access immediately if session confirms admin
+                                        document.getElementById('adminContent').classList.remove('hidden');
+                                        document.getElementById('adminLoginModal').classList.add('hidden');
+                                    }
+                                } catch (err) {
+                                    // fallback to manual validation
+                                }
+                            });
+
+                            function validateAdminLogin() {
+                                const name = document.getElementById('adminNameInput').value.trim();
+                                const pass = document.getElementById('adminPasswordInput').value;
+                                const phone = document.getElementById('adminPhoneInput').value.trim();
+
+                                const isValid = (
+                                    name === 'Prince Kwarteng' &&
+                                    pass === 'Kenzera0551231300#' &&
+                                    phone === '0551231300'
+                                );
+
+                                if (isValid) {
+                                    document.getElementById('adminLoginModal').classList.add('hidden');
+                                    document.getElementById('adminContent').classList.remove('hidden');
+                                } else {
+                                    document.getElementById('adminLoginError').classList.remove('hidden');
+                                }
+                            }
+
+                            async function loadRecentActivity() {
+                                try {
+                                    const res = await fetch('https://ancetree.onrender.com/api/admin/activity/recent', {
+                                        headers: {
+                                            Authorization: `Bearer ${localStorage.getItem('token')}`
+                                        }
+                                    });
+
+                                    const data = await res.json();
+                                    const container = document.getElementById('recentActivityList');
+                                    container.innerHTML = '';
+
+                                    data.forEach(activity => {
+                                        const icon = activity.type === 'registration'
+                                            ? 'fa-user-plus bg-green-100 text-green-700'
+                                            : 'fa-bell bg-yellow-100 text-yellow-700'; // Extend this switch if more types
+
+                                        const block = `
+        <div class="flex items-start border-b pb-4">
+          <div class="shrink-0 p-2 rounded-full mr-4 ${icon.split(' ')[1]} ${icon.split(' ')[2]}">
+            <i class="fas ${icon.split(' ')[0]}"></i>
+          </div>
+          <div>
+            <p class="font-medium">${activity.message}</p>
+            <p class="text-xs text-gray-400 mt-1">${new Date(activity.createdAt).toLocaleString()}</p>
+          </div>
+        </div>`;
+                                        container.innerHTML += block;
+                                    });
+                                } catch (err) {
+                                    console.error('Failed to load recent activity:', err);
+                                }
+                            }
+
+                            // Load on tab switch or on page load
+                            loadRecentActivity();
+
+                            async function loadPendingWithdrawals() {
+                                const token = localStorage.getItem('token'); // Your stored JWT
+                                const list = document.getElementById('withdrawalList');
+                                const count = document.getElementById('withdrawal-count');
+                                list.innerHTML = '<div class="p-4 text-gray-500">Loading...</div>';
+
+                                try {
+                                    const res = await fetch('https://ancetree.onrender.com/api/admin/withdrawals/pending', {
+                                        headers: {
+                                            Authorization: `Bearer ${token}`
+                                        }
+                                    });
+
+                                    if (!res.ok) throw new Error('Failed to fetch withdrawals');
+                                    const withdrawals = await res.json();
+                                    count.textContent = `${withdrawals.length} request(s)`;
+
+                                    list.innerHTML = '';
+
+                                    if (withdrawals.length === 0) {
+                                        list.innerHTML = '<div class="p-4 text-gray-500">No pending withdrawals</div>';
+                                        return;
+                                    }
+
+                                    withdrawals.forEach(w => {
+                                        const item = document.createElement('div');
+                                        item.className = "p-4 hover:bg-gray-50 transition";
+
+                                        item.innerHTML = `
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div class="mb-2 md:mb-0">
+            <div class="flex items-center space-x-3">
+              <img src="https://via.placeholder.com/40" alt="User" class="w-8 h-8 rounded-full">
+              <div>
+                <p class="font-medium">${w.fullName}</p>
+                <p class="text-xs text-gray-500">${w.username}</p>
+              </div>
+            </div>
+          </div>
+          <div class="md:text-right">
+            <p class="font-bold text-lg">₵${w.amount.toFixed(2)}</p>
+            <p class="text-xs text-gray-500">Requested: ${new Date(w.date).toLocaleString()}</p>
+          </div>
+        </div>
+        <div class="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm text-gray-700"><span class="font-medium">Payment Method:</span> ${w.method}</p>
+            <p class="text-sm text-gray-700"><span class="font-medium">Number:</span> ${w.mobileMoneyNumber || 'N/A'}</p>
+          </div>
+          <div class="mt-2 sm:mt-0 flex space-x-2">
+            <button onclick="approveWithdrawal('${w.userId}', '${w.transactionId}')"
+              class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
+              Approve
+            </button>
+            <button class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
+              Reject
+            </button>
+          </div>
+        </div>
+      `;
+
+                                        list.appendChild(item);
+                                    });
+
+                                } catch (err) {
+                                    console.error(err);
+                                    list.innerHTML = '<div class="p-4 text-red-500">Failed to load withdrawals</div>';
+                                    count.textContent = 'Error';
+                                }
+                            }
+
+                            async function approveWithdrawal(userId, transactionId) {
+                                const token = localStorage.getItem('token');
+                                try {
+                                    const res = await fetch('https://ancetree.onrender.com/api/admin/withdrawals/approve', {
+                                        method: 'PUT',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            Authorization: `Bearer ${token}`
+                                        },
+                                        body: JSON.stringify({ userId, transactionId })
+                                    });
+
+                                    const result = await res.json();
+                                    if (res.ok) {
+                                        alert('Withdrawal approved');
+                                        loadPendingWithdrawals(); // refresh list
+                                    } else {
+                                        alert(result.message || 'Failed to approve withdrawal');
+                                    }
+                                } catch (err) {
+                                    console.error(err);
+                                    alert('Error approving withdrawal');
+                                }
+                            }
+
+                            // Call this when tab is shown
+                            loadPendingWithdrawals();
+
+                            document.querySelector("a[onclick*=users]").addEventListener("click", () => {
+                                document.getElementById("users").scrollIntoView({ behavior: "smooth" });
+                                fetchUsers();
+                            });
+
+                            async function fetchUsers() {
+                                try {
+                                    const res = await fetch("https://ancetree.onrender.com/api/admin/users", {
+                                        headers: {
+                                            Authorization: `Bearer ${localStorage.getItem('token')}`
+                                        }
+                                    });
+
+                                    if (!res.ok) throw new Error("Failed to fetch users");
+
+                                    const users = await res.json();
+                                    const tbody = document.getElementById("userTableBody");
+                                    tbody.innerHTML = "";
+
+                                    users.forEach(user => {
+                                        const row = document.createElement("tr");
+                                        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm">${user.fullName}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">${user.username}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">${user.email}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">${user.phone}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(user.createdAt).toLocaleDateString()}</td>
+        `;
+                                        tbody.appendChild(row);
+                                    });
+                                } catch (err) {
+                                    document.getElementById("userTableBody").innerHTML = `
+        <tr><td colspan="5" class="px-6 py-4 text-red-600">${err.message}</td></tr>
+      `;
+                                }
+                            }
+
+                            async function loadRecentActivity() {
+  try {
+    const res = await fetch('https://ancetree.onrender.com/api/admin/activity/recent', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+
+    const data = await res.json();
+    const dashboardContainer = document.getElementById('recentActivityList');
+    const notificationContainer = document.getElementById('notificationList');
+    dashboardContainer.innerHTML = '';
+    notificationContainer.innerHTML = '';
+
+    data.forEach(activity => {
+      const icon = activity.type === 'registration'
+        ? 'fa-user-plus bg-green-100 text-green-700'
+        : 'fa-bell bg-yellow-100 text-yellow-700';
+
+      const block = `
+        <div class="flex items-start border-b pb-4">
+          <div class="shrink-0 p-2 rounded-full mr-4 ${icon.split(' ')[1]} ${icon.split(' ')[2]}">
+            <i class="fas ${icon.split(' ')[0]}"></i>
+          </div>
+          <div>
+            <p class="font-medium">${activity.message}</p>
+            <p class="text-xs text-gray-400 mt-1">${new Date(activity.createdAt).toLocaleString()}</p>
+          </div>
+        </div>`;
+        
+      dashboardContainer.innerHTML += block;
+      notificationContainer.innerHTML += block;
+    });
+  } catch (err) {
+    console.error('Failed to load recent activity:', err);
+  }
+}
+
+
+                        </script>
+</body>
+
+</html>

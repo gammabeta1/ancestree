@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Terms of Service Modal Example</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome CDN for icons -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    rel="stylesheet"
+  />
+</head>
+
+<body>
+  <!-- Terms of Service Modal -->
+  <div
+    id="termsModal"
+    class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 py-6"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+    >
+      <div class="flex justify-between items-center bg-green-600 text-white px-6 py-4">
+        <h3 id="modalTitle" class="text-xl font-bold flex items-center">
+          <i class="fas fa-file-contract mr-2"></i> Terms of Service
+        </h3>
+        <button
+          onclick="closeModal('termsModal')"
+          class="text-white hover:text-gray-200 text-2xl"
+          aria-label="Close modal"
+        >
+          &times;
+        </button>
+      </div>
+      <div class="modal-content p-6 text-gray-700 overflow-y-auto max-h-[60vh]">
+        <h4 class="font-bold text-lg mb-3">1. Acceptance of Terms</h4>
+        <p class="mb-4">
+          By accessing or using the AncesTree AgrInvest platform, you agree to be
+          bound by these Terms of Service. If you do not agree to all the terms, you
+          may not access the platform.
+        </p>
+
+        <h4 class="font-bold text-lg mb-3">2. Investment Services</h4>
+        <p class="mb-4">
+          AncesTree AgrInvest provides a platform connecting investors with
+          agricultural investment opportunities. We are not financial advisors and do
+          not provide investment advice.
+        </p>
+
+        <h4 class="font-bold text-lg mb-3">3. Investor Responsibilities</h4>
+        <p class="mb-4">
+          Investors are responsible for conducting their own due diligence before
+          making any investment decisions. All investments carry risk, and past
+          performance is not indicative of future results.
+        </p>
+
+        <h4 class="font-bold text-lg mb-3">4. Farm Operations</h4>
+        <p class="mb-4">
+          While we strive to maintain high agricultural standards, we cannot guarantee
+          specific yields or returns due to factors beyond our control such as weather,
+          pests, or market conditions.
+        </p>
+
+        <h4 class="font-bold text-lg mb-3">5. Account Termination</h4>
+        <p class="mb-4">
+          We reserve the right to terminate or suspend accounts that violate these
+          terms or engage in fraudulent activities.
+        </p>
+      </div>
+      <div class="bg-gray-100 px-6 py-3 flex justify-end">
+        <button
+          onclick="history.back()"
+          class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition"
+        >
+          I Understand
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+      }
+    }
+  </script>
+</body>
+</html>

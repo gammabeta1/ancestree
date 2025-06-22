@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome CDN for icons -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    rel="stylesheet"
+  />
+</head>
+<body class="bg-gray-100">
+
+  <!-- Privacy Policy Modal (Visible by Default) -->
+  <div id="privacyModal"
+       class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 py-6">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+      <div class="flex justify-between items-center bg-green-600 text-white px-6 py-4">
+        <h3 class="text-xl font-bold">
+          <i class="fas fa-shield-alt mr-2"></i> Privacy Policy
+        </h3>
+      </div>
+
+      <div class="modal-content p-6 text-gray-700 overflow-y-auto max-h-[60vh]">
+        <h4 class="font-bold text-lg mb-3">1. Information Collection</h4>
+        <p class="mb-4">We collect personal information when you register an account, make investments, or
+          communicate with us. This may include name, contact details, financial information, and
+          identification documents.</p>
+
+        <h4 class="font-bold text-lg mb-3">2. Use of Information</h4>
+        <p class="mb-4">Your information is used to provide our services, verify your identity, process
+          transactions, communicate with you, and improve our platform. We do not sell your personal
+          information to third parties.</p>
+
+        <h4 class="font-bold text-lg mb-3">3. Data Security</h4>
+        <p class="mb-4">We implement industry-standard security measures to protect your information. However,
+          no method of transmission over the internet is 100% secure.</p>
+
+        <h4 class="font-bold text-lg mb-3">4. Cookies and Tracking</h4>
+        <p class="mb-4">We use cookies to enhance your experience on our platform. You can disable cookies in
+          your browser settings, but this may affect functionality.</p>
+
+        <h4 class="font-bold text-lg mb-3">5. Third-Party Services</h4>
+        <p class="mb-4">We may use third-party services for payment processing, analytics, and other functions.
+          These services have their own privacy policies governing your information.</p>
+      </div>
+
+      <div class="bg-gray-100 px-6 py-3 flex justify-end">
+        <button onclick="history.back()"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition">
+          I Accept
+        </button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

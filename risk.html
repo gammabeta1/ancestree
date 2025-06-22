@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Risk Disclosure</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome for icons -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    rel="stylesheet"
+  />
+</head>
+<body class="bg-gray-100">
+
+  <!-- Risk Disclosure Modal (Visible by Default) -->
+  <div id="riskModal"
+       class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 py-6">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+      <div class="flex justify-between items-center bg-green-600 text-white px-6 py-4">
+        <h3 class="text-xl font-bold">
+          <i class="fas fa-leaf mr-2"></i> Investment Risk Disclosure
+        </h3>
+      </div>
+
+      <div class="modal-content p-6 text-gray-700 overflow-y-auto max-h-[60vh]">
+        <h4 class="font-bold text-lg mb-3">1. Understanding the Nature of Investment</h4>
+        <p class="mb-4">
+          Investing in agriculture can be a rewarding and impactful way to grow your wealth while supporting real
+          economic development. Like any business venture, it involves a level of risk which we work hard to minimize
+          through experience, planning, and technology.
+        </p>
+
+        <h4 class="font-bold text-lg mb-3">2. Agricultural Dynamics</h4>
+        <p class="mb-4">
+          Agricultural projects may be influenced by seasonal patterns, weather conditions, and supply chain
+          factors. However, our operations are designed with risk management strategies and contingency plans
+          to maintain stability and yield consistent outcomes.
+        </p>
+
+        <h4 class="font-bold text-lg mb-3">3. Return on Investment</h4>
+        <p class="mb-4">
+          While we strive to deliver reliable and attractive returns, it's important to note that all projected
+          returns are based on market assumptions and real-time operations. Historical performance is a useful guide,
+          but not a guarantee of future outcomes.
+        </p>
+
+        <h4 class="font-bold text-lg mb-3">4. Long-Term Vision</h4>
+        <p class="mb-4">
+          Agricultural investments are ideal for those who understand and appreciate a long-term approach to
+          financial growth. Your capital is committed for a fixed cycle to ensure maximum productivity and return.
+        </p>
+
+        <h4 class="font-bold text-lg mb-3">5. Transparency and Support</h4>
+        <p class="mb-4">
+          We believe in open communication. You will receive updates and performance reports throughout your
+          investment cycle. Our team is always available to answer questions and provide support.
+        </p>
+
+        <h4 class="font-bold text-lg mb-3">6. Your Choice Matters</h4>
+        <p class="mb-4">
+          This disclosure is simply to help you make informed decisions. We encourage you to consult with
+          a financial advisor if needed and invest only what aligns with your goals and comfort level.
+        </p>
+      </div>
+
+      <div class="bg-gray-100 px-6 py-3 flex justify-end">
+        <button onclick="history.back()"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition">
+          I Acknowledge
+        </button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
